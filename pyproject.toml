@@ -1,0 +1,39 @@
+[tool.poetry]
+name = "cash-track"
+version = "0.1.0"
+description = "Приложение для анализа транзакций"
+authors = ["VladislavaFr <vladislava.fridmann1@aol.com>"]
+license = "Proprietary"
+packages = [
+    { include = "src" }
+]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pandas = "^2.1"
+requests = "^2.31"
+openpyxl = "^3.1"
+python-dotenv = "^1.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0"
+flake8 = "^6.0"
+black = "^24.0"
+isort = "^6.0"
+mypy = "^1.4"
+
+[tool.black]
+line-length = 119
+exclude = ".git"
+
+[tool.isort]
+line_length = 119
+
+[tool.mypy]
+disallow_untyped_defs = true
+warn_return_any = true
+exclude = "venv"
+
+[build-system]
+requires = ["poetry-core>=1.6.0"]
+build-backend = "poetry.core.masonry.api"
