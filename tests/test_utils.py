@@ -1,7 +1,15 @@
 import pytest
-from src.utils import get_greeting
+import pandas as pd
+from src.utils import read_transactions_from_excel
 
-def test_get_greeting():
-    from datetime import datetime
-    assert get_greeting(datetime.strptime("2025-09-25 08:00:00", "%Y-%m-%d %H:%M:%S")) == "Доброе утро"
-    assert get_greeting(datetime.strptime("2025-09-25 14:00:00", "%Y-%m-%d %H:%M:%S")) == "Добрый день"
+def test_read_transactions(tmp_path):
+    file = tmp_path / "test.xlsx"
+    df = pd.DataFrame({
+        "Дата операции": ["2025-09-01"],
+        "Категория": ["Супермаркеты"],
+        "Кешбэк": [10]
+    })
+    df.to_excel(file, index=False)
+    read_df = read_transactions_from_excel(str(file))
+    assert not read_df.empty
+    assert read_df.iloc[0]["Кешбэк"] == 10

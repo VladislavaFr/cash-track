@@ -1,54 +1,37 @@
-import json
-import logging
-from datetime import datetime
 import pandas as pd
-import requests
+from datetime import datetime
+from typing import List, Dict, Optional
 
-logger = logging.getLogger(__name__)
-
-def read_excel(file_path: str) -> pd.DataFrame:
+def read_transactions_from_excel(file_path: str) -> pd.DataFrame:
     """
-    Считывает Excel-файл и возвращает DataFrame.
+    Чтение Excel файла с транзакциями.
     """
     try:
-        df = pd.read_excel(file_path)
-        logger.info(f"Excel file {file_path} read successfully")
+        df = pd.read_excel(file_path, engine='openpyxl')
+        df.fillna(0, inplace=True)
         return df
-    except Exception as e:
-        logger.error(f"Error reading Excel file {file_path}: {e}")
-        raise
+    except FileNotFoundError:
+        print(f"Файл {file_path} не найден.")
+        return pd.DataFrame()
 
-def format_json(data: dict) -> str:
+def filter_transactions(df: pd.DataFrame, year: Optional[int]=None, month: Optional[int]=None) -> pd.DataFrame:
     """
-    Преобразует словарь в JSON строку.
+    Фильтрует транзакции по году и месяцу.
     """
-    return json.dumps(data, ensure_ascii=False, indent=2)
+    if 'Дата операции' not in df.columns:
+        raise ValueError("В таблице нет колонки 'Дата операции'")
+    df['Дата операции'] = pd.to_datetime(df['Дата операции'])
+    if year:
+        df = df[df['Дата операции'].dt.year == year]
+    if month:
+        df = df[df['Дата операции'].dt.month == month]
+    return df
 
-def get_greeting(current_time: datetime) -> str:
+def sum_cashback(df: pd.DataFrame) -> Dict[str, float]:
     """
-    Возвращает приветствие в зависимости от времени суток.
+    Суммирует кешбэк по категориям.
     """
-    hour = current_time.hour
-    if 6 <= hour < 12:
-        return "Доброе утро"
-    elif 12 <= hour < 18:
-        return "Добрый день"
-    elif 18 <= hour < 23:
-        return "Добрый вечер"
-    else:
-        return "Доброй ночи"
-
-def fetch_currency_rates(currencies: list) -> dict:
-    """
-    Заглушка для получения курса валют через API.
-    """
-    # Здесь можно подключить любой API
-    rates = {currency: 70.0 + i for i, currency in enumerate(currencies)}
-    return rates
-
-def fetch_stock_prices(stocks: list) -> dict:
-    """
-    Заглушка для получения цен на акции через API.
-    """
-    prices = {stock: 100.0 + i * 10 for i, stock in enumerate(stocks)}
-    return prices
+    if 'Категория' not in df.columns or 'Кешбэк' not in df.columns:
+        raise ValueError("В таблице нет колонки 'Категория' или 'Кешбэк'")
+    grouped = df.groupby('Категория')['Кешбэк'].sum()
+    return grouped.to_dict()

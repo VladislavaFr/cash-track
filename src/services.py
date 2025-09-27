@@ -1,18 +1,27 @@
 import logging
-from datetime import datetime
-from typing import List, Dict, Any
+from typing import Dict
+from .utils import read_transactions_from_excel, filter_transactions, sum_cashback
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def cashback_analysis(year: int, month: int, transactions: List[Dict[str, Any]]) -> dict:
+
+def cashback_analysis(file_path: str, year: int, month: int) -> Dict[str, float]:
     """
-    Анализ выгодных категорий повышенного кешбэка.
+    Полный анализ кешбэка с чтением Excel.
+    Возвращает словарь {категория: сумма кешбэка}.
     """
-    result = {}
-    for tx in transactions:
-        date = datetime.strptime(tx["Дата операции"], "%Y-%m-%d")
-        if date.year == year and date.month == month:
-            category = tx.get("Категория", "Прочее")
-            result[category] = result.get(category, 0) + tx.get("Сумма платежа", 0) / 100
-    logger.info("Cashback analysis done")
+    logger.info("Чтение транзакций...")
+    df = read_transactions_from_excel(file_path)
+    if df.empty:
+        logger.warning("Нет транзакций для анализа.")
+        return {}
+
+    logger.info(f"Фильтрация транзакций за {year}-{month}...")
+    df_filtered = filter_transactions(df, year, month)
+
+    logger.info("Суммирование кешбэка по категориям...")
+    result = sum_cashback(df_filtered)
+
+    logger.info("Анализ кешбэка завершен.")
     return result

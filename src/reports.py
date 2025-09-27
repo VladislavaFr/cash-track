@@ -1,23 +1,9 @@
-import logging
-import pandas as pd
-from datetime import datetime
-from typing import Optional
+import json
 
-logger = logging.getLogger(__name__)
-
-def spending_by_category(transactions: pd.DataFrame, category: str, date: Optional[str] = None) -> pd.DataFrame:
+def save_report_json(result: dict, filename: str):
     """
-    Отчёт: траты по категории за последние три месяца.
+    Сохраняет отчет в JSON.
     """
-    if date:
-        end_date = datetime.strptime(date, "%Y-%m-%d")
-    else:
-        end_date = datetime.now()
-    start_date = end_date - pd.DateOffset(months=3)
-    filtered = transactions[
-        (transactions["Дата операции"] >= start_date) &
-        (transactions["Дата операции"] <= end_date) &
-        (transactions["Категория"] == category)
-    ]
-    logger.info(f"Report generated for category {category}")
-    return filtered
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(result, f, ensure_ascii=False, indent=4)
+    print(f"Отчет сохранен в {filename}")
