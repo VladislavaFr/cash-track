@@ -1,15 +1,19 @@
-from src.services import cashback_analysis
-from src.views import display_cashback
-from src.reports import save_report_json
+from src.utils import load_excel, load_user_settings, greeting_by_time
+from src.services import get_currency_rates, get_stock_prices
+
 
 def main():
-    file_path = "data/operations.xlsx"
-    year = 2025
-    month = 9
+    # Пример использования функций
+    settings = load_user_settings()
+    currencies = settings.get("currencies", [])
+    stocks = settings.get("stocks", [])
 
-    result = cashback_analysis(file_path, year, month)
-    display_cashback(result)
-    save_report_json(result, f"reports/cashback_{year}_{month}.json")
+    currency_rates = get_currency_rates(currencies)
+    stock_prices = get_stock_prices(stocks)
+
+    print("Курсы валют:", currency_rates)
+    print("Цены акций:", stock_prices)
+
 
 if __name__ == "__main__":
     main()

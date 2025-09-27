@@ -1,10 +1,9 @@
-def display_cashback(result: dict):
-    """
-    Выводит результат анализа в консоль.
-    """
-    if not result:
-        print("Нет данных для отображения.")
-        return
-    print("\n=== Отчет по кешбэку ===")
-    for category, cashback in result.items():
-        print(f"{category}: {cashback:.2f} руб.")
+from src.utils import load_excel, greeting_by_time
+from src.reports import summarize_transactions, format_transaction_report
+
+
+def generate_transaction_report(file_path: str) -> str:
+    transactions = load_excel(file_path).to_dict(orient="records")
+    summary = summarize_transactions(transactions)
+    report = format_transaction_report(summary)
+    return report

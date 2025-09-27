@@ -1,23 +1,15 @@
-import pytest
-import pandas as pd
-from src.services import cashback_analysis
-from src.utils import sum_cashback, filter_transactions
+from src.services import get_currency_rates, get_stock_prices
 
-@pytest.fixture
-def sample_df():
-    data = {
-        "Дата операции": ["2025-09-01", "2025-09-05", "2025-08-20", "2025-09-10"],
-        "Категория": ["Супермаркеты", "Кафе", "Супермаркеты", "Супермаркеты"],
-        "Кешбэк": [12.5, 5, 8, 3.5]
-    }
-    return pd.DataFrame(data)
 
-def test_filter_transactions(sample_df):
-    filtered = filter_transactions(sample_df, 2025, 9)
-    assert len(filtered) == 3
+def test_get_currency_rates():
+    result = get_currency_rates(["USD"])
+    assert isinstance(result, list)
+    assert "currency" in result[0]
+    assert "rate" in result[0]
 
-def test_sum_cashback(sample_df):
-    filtered = filter_transactions(sample_df, 2025, 9)
-    result = sum_cashback(filtered)
-    assert result["Супермаркеты"] == 16.0
-    assert result["Кафе"] == 5
+
+def test_get_stock_prices():
+    result = get_stock_prices(["AAPL"])
+    assert isinstance(result, list)
+    assert "stock" in result[0]
+    assert "price" in result[0]

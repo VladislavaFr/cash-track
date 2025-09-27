@@ -1,27 +1,32 @@
 import logging
-from typing import Dict
-from .utils import read_transactions_from_excel, filter_transactions, sum_cashback
+from typing import Any, Dict, List
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+import requests
 
 
-def cashback_analysis(file_path: str, year: int, month: int) -> Dict[str, float]:
-    """
-    Полный анализ кешбэка с чтением Excel.
-    Возвращает словарь {категория: сумма кешбэка}.
-    """
-    logger.info("Чтение транзакций...")
-    df = read_transactions_from_excel(file_path)
-    if df.empty:
-        logger.warning("Нет транзакций для анализа.")
-        return {}
+def get_currency_rates(currencies):
+    result = []
+    for currency in currencies:
+        try:
+            resp = requests.get(
+                f"https://api.exchangerate.host/latest?base=RUB&symbols={currency}", timeout=10
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            rate = data.get("rates", {}).get(currency, None)
+            if rate is None:
+                logging.warning(f"Не удалось получить курс для {currency}")
+                rate = 0
+            result.append({"currency": currency, "rate": round(rate, 2)})
+        except Exception as e:
+            logging.error(f"Ошибка при получении курсов валют: {e}")
+            result.append({"currency": currency, "rate": 0})
+    return result
 
-    logger.info(f"Фильтрация транзакций за {year}-{month}...")
-    df_filtered = filter_transactions(df, year, month)
 
-    logger.info("Суммирование кешбэка по категориям...")
-    result = sum_cashback(df_filtered)
-
-    logger.info("Анализ кешбэка завершен.")
+def get_stock_prices(stocks: List[str]) -> List[Dict[str, Any]]:
+    result = []
+    for stock in stocks:
+        # Фиктивные данные
+        result.append({"stock": stock, "price": round(100 + hash(stock) % 500, 2)})
     return result

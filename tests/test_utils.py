@@ -1,15 +1,18 @@
 import pytest
-import pandas as pd
-from src.utils import read_transactions_from_excel
+from src.utils import greeting_by_time
 
-def test_read_transactions(tmp_path):
-    file = tmp_path / "test.xlsx"
-    df = pd.DataFrame({
-        "Дата операции": ["2025-09-01"],
-        "Категория": ["Супермаркеты"],
-        "Кешбэк": [10]
-    })
-    df.to_excel(file, index=False)
-    read_df = read_transactions_from_excel(str(file))
-    assert not read_df.empty
-    assert read_df.iloc[0]["Кешбэк"] == 10
+
+def test_greeting_morning():
+    assert greeting_by_time("2025-09-27 08:00:00") == "Доброе утро"
+
+
+def test_greeting_afternoon():
+    assert greeting_by_time("2025-09-27 15:00:00") == "Добрый день"
+
+
+def test_greeting_evening():
+    assert greeting_by_time("2025-09-27 20:00:00") == "Добрый вечер"
+
+
+def test_greeting_night():
+    assert greeting_by_time("2025-09-27 02:00:00") == "Доброй ночи"
