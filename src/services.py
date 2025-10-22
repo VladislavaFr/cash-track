@@ -1,32 +1,42 @@
+import json
 import logging
-from typing import Any, Dict, List
-
 import requests
+from typing import List, Dict
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
-def get_currency_rates(currencies):
-    result = []
-    for currency in currencies:
-        try:
-            resp = requests.get(
-                f"https://api.exchangerate.host/latest?base=RUB&symbols={currency}", timeout=10
-            )
-            resp.raise_for_status()
-            data = resp.json()
-            rate = data.get("rates", {}).get(currency, None)
-            if rate is None:
-                logging.warning(f"Не удалось получить курс для {currency}")
-                rate = 0
-            result.append({"currency": currency, "rate": round(rate, 2)})
-        except Exception as e:
-            logging.error(f"Ошибка при получении курсов валют: {e}")
-            result.append({"currency": currency, "rate": 0})
-    return result
+def get_currency_rates(currencies: list[str]) -> list[dict]:
+    """#json #requests #logging
+    Получает курсы валют из API.
+    """
+    url = "https://open.er-api.com/v6/latest/USD"
+    try:
+        response = requests.get(url, timeout=10)
+        data = response.json()
+        rates = data.get("rates", {})
+        return [{"currency": c, "rate": rates.get(c)} for c in currencies]
+    except Exception as e:
+        logging.error(f"Ошибка при получении курсов валют: {e}")
+        return [{"currency": c, "rate": None} for c in currencies]
 
 
-def get_stock_prices(stocks: List[str]) -> List[Dict[str, Any]]:
-    result = []
-    for stock in stocks:
-        # Фиктивные данные
-        result.append({"stock": stock, "price": round(100 + hash(stock) % 500, 2)})
-    return result
+def get_stock_prices(stocks: list[str]) -> list[dict]:
+    """#json #requests #logging
+    Возвращает фиктивные данные по акциям (можно заменить API).
+    """
+    logging.info("Получение цен акций (демо)...")
+    return [{"stock": s, "price": 100 + i * 5} for i, s in enumerate(stocks)]
+
+
+def simple_search(query: str, transactions: List[Dict[str, str]]) -> str:
+    """#json #logging
+    Простой поиск транзакций по строке в описании.
+    """
+    logging.info(f"Выполняется поиск по запросу: {query}")
+    try:
+        result = [t for t in transactions if query.lower() in t.get("Описание", "").lower()]
+        return json.dumps(result, ensure_ascii=False, indent=2)
+    except Exception as e:
+        logging.error(f"Ошибка при поиске: {e}")
+        return json.dumps({"error": str(e)}, ensure_ascii=False, indent=2)

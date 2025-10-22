@@ -1,36 +1,57 @@
 import json
 import logging
-import os
 from datetime import datetime
-from typing import Any, Dict, List
-
 import pandas as pd
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
 def load_excel(path: str) -> pd.DataFrame:
-    if not os.path.exists(path):
-        logging.error(f"Файл {path} не найден")
-        raise FileNotFoundError(f"Файл {path} не найден")
-    return pd.read_excel(path)
+    """#pandas #logging
+    Загружает данные из Excel.
+    """
+    logging.info(f"Загрузка Excel-файла: {path}")
+    try:
+        df = pd.read_excel(path)
+        return df
+    except FileNotFoundError:
+        logging.warning(f"Файл {path} не найден, возвращаю пустой DataFrame.")
+        return pd.DataFrame()
+    except Exception as e:
+        logging.error(f"Ошибка при загрузке Excel: {e}")
+        return pd.DataFrame()
 
 
-def load_user_settings(path: str = "user_settings.json") -> Dict[str, Any]:
-    with open(path, "r", encoding="utf-8") as file:
-        return json.load(file)
+def load_user_settings(path: str = "data/user_settings.json") -> dict:
+    """#json #logging
+    Загружает пользовательские настройки.
+    """
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        logging.warning("Файл user_settings.json не найден, возвращаю пустой словарь.")
+        return {}
+    except json.JSONDecodeError:
+        logging.error("Ошибка декодирования JSON в user_settings.json")
+        return {}
 
 
 def greeting_by_time(date_str: str) -> str:
-    dt = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
-    hour = dt.hour
-    if 6 <= hour < 12:
-        return "Доброе утро"
-    elif 12 <= hour < 18:
-        return "Добрый день"
-    elif 18 <= hour < 24:
-        return "Добрый вечер"
-    return "Доброй ночи"
+    """#datetime #logging
+    Возвращает приветствие по времени суток.
+    """
+    try:
+        dt = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+        hour = dt.hour
+        if 5 <= hour < 12:
+            return "Доброе утро!"
+        elif 12 <= hour < 18:
+            return "Добрый день!"
+        elif 18 <= hour < 23:
+            return "Добрый вечер!"
+        else:
+            return "Доброй ночи!"
+    except Exception as e:
+        logging.error(f"Ошибка при обработке времени: {e}")
+        return "Здравствуйте!"
