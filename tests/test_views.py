@@ -1,22 +1,28 @@
-import pandas as pd
-import pytest
-from src.views import generate_transaction_report
+import unittest
+from unittest.mock import patch
+from datetime import datetime
+from src.views import main_page_response
 
 
-@pytest.fixture
-def sample_excel(tmp_path):
-    data = pd.DataFrame(
-        [
-            {"currency": "USD", "amount": 100, "date": "2025-09-27"},
-            {"currency": "EUR", "amount": 200, "date": "2025-09-27"},
-        ]
-    )
-    file = tmp_path / "transactions.xlsx"
-    data.to_excel(file, index=False)
-    return file
+class TestMainPageResponse(unittest.TestCase):
+    @patch("src.views.load_user_settings")
+    @patch("src.views.get_currency_rates")
+    @patch("src.views.get_stock_prices")
+    def test_main_page_response(
+        self, mock_get_stocks, mock_get_currencies, mock_load_settings
+    ):
+        mock_load_settings.return_value = {
+            "user_currencies": ["USD"],
+            "user_stocks": ["AAPL"],
+        }
+        mock_get_currencies.return_value = [{"currency": "USD", "rate": 70.0}]
+        mock_get_stocks.return_value = [{"stock": "AAPL", "price": 150.0}]
+
+        response = main_page_response("2025-10-23 12:00:00")
+        self.assertEqual(response["greeting"], "Добрый день")
+        self.assertEqual(response["currency_rates"][0]["currency"], "USD")
+        self.assertEqual(response["stock_prices"][0]["stock"], "AAPL")
 
 
-def test_generate_transaction_report(sample_excel):
-    report = generate_transaction_report(str(sample_excel))
-    assert "USD: 100.00" in report
-    assert "EUR: 200.00" in report
+if __name__ == "__main__":
+    unittest.main()
