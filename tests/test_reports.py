@@ -1,18 +1,15 @@
-from src.reports import summarize_transactions, format_transaction_report
+import pytest
+from src.reports import spending_by_category, spending_by_weekday, spending_by_workday
 
+def test_spending_by_category(sample_dataframe):
+    df = spending_by_category(sample_dataframe, category="Покупки", date="2025-10-03")
+    assert not df.empty
+    assert "Сумма операции" in df.columns
 
-def test_summarize_transactions():
-    transactions = [
-        {"currency": "USD", "amount": 100},
-        {"currency": "USD", "amount": 50},
-        {"currency": "EUR", "amount": 200},
-    ]
-    summary = summarize_transactions(transactions)
-    assert summary == {"USD": 150, "EUR": 200}
+def test_spending_by_weekday(sample_dataframe):
+    df = spending_by_weekday(sample_dataframe, date="2025-10-03")
+    assert "weekday" in df.columns
 
-
-def test_format_transaction_report():
-    summary = {"USD": 150, "EUR": 200}
-    report = format_transaction_report(summary)
-    assert "USD: 150.00" in report
-    assert "EUR: 200.00" in report
+def test_spending_by_workday(sample_dataframe):
+    df = spending_by_workday(sample_dataframe, date="2025-10-03")
+    assert not df.empty

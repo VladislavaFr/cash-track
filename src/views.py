@@ -1,36 +1,16 @@
 from datetime import datetime
-from typing import Dict, Any, List
-
-from src.utils import load_excel, greeting_by_time, load_user_settings
-from src.reports import summarize_transactions, format_transaction_report
+from typing import Dict, Any
+from src.utils import load_user_settings, greeting_by_time
 from src.services import get_currency_rates, get_stock_prices
-
+from src.reports import summarize_transactions, format_transaction_report
+import pandas as pd
 
 def generate_transaction_report(file_path: str) -> str:
-    """
-    Генерирует текстовый отчет по транзакциям из Excel-файла.
-
-    Args:
-        file_path (str): Путь к файлу Excel.
-
-    Returns:
-        str: Отчет по транзакциям.
-    """
-    transactions = load_excel(file_path).to_dict(orient="records")
+    transactions = pd.read_excel(file_path).to_dict(orient="records")
     summary = summarize_transactions(transactions)
     return format_transaction_report(summary)
 
-
 def main_page_response(date_str: str) -> Dict[str, Any]:
-    """
-    Генерирует JSON-ответ для главной страницы.
-
-    Args:
-        date_str (str): Дата и время в формате YYYY-MM-DD HH:MM:SS.
-
-    Returns:
-        Dict[str, Any]: JSON с данными для фронтенда.
-    """
     dt = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
     greeting = greeting_by_time(dt)
     settings = load_user_settings()
